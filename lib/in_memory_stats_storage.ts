@@ -1,13 +1,13 @@
 import { BannerStatsProvider, AppStatsProvider } from "./stats_provider"
 
 export class InMemoryBannerStatsStorage implements BannerStatsProvider {
-  data = new Map<string, string>();
+  data = new Map<string, number>();
 
-  async get(key: string): Promise<string | undefined> {
+  getNumber = async (key: string): Promise<number | undefined> => {
     return Promise.resolve(this.data.get(key));
   }
 
-  async set(key: string, value: string): Promise<void> {
+  async setNumber(key: string, value: number): Promise<void> {
     return new Promise((resolve) => {
       setImmediate(() => {
         this.data.set(key, value);

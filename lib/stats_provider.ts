@@ -1,10 +1,10 @@
 
 export interface BannerStatsProvider {
-  get: (key: string) => Promise<string | undefined>
-  set: (key: string, value: string) => Promise<void>
+  readonly getNumber: (key: string) => Promise<number | undefined>
+  readonly setNumber: (key: string, value: number) => Promise<void>
 }
 
 export interface AppStatsProvider {
-  readonly getFirstSessionTime?: async () => Promise<Date>
-  readonly getSessionStartTime?: async () => Promise<Date>
+  readonly getFirstSessionTime?: () => Promise<Date>
+  readonly getSessionStartTime?: () => Promise<Date>
 }
