@@ -1,2 +1,2 @@
-# driver-test-banner-carousel
-Typescript library with banner carousel implementation
+# react-native-common
+Typescript library with common classes for react-native applications
