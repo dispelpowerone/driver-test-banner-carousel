@@ -1,6 +1,6 @@
 {
-  "name": "@dispel/banner-carousel",
-  "version": "1.0.0",
+  "name": "@dispel/react-native-common",
+  "version": "0.2.0",
   "description": "Banner carousel implementation",
   "main": "src/index.js",
   "scripts": {
