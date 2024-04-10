@@ -1,33 +1,16 @@
 import {StatsManager, EngagementStats, ComponentStats} from './types';
 import {GenericStatsStorage} from './storage/generic';
-
-class JSONRecordAccessor<Interface> {
-  constructor(readonly storage: GenericStatsStorage) {
-    this.storage = storage;
-  }
-
-  async get(name: string): Promise<Interface> {
-    return JSON.parse((await this.storage.get(name)) || '{}');
-  }
-
-  async update(name: string, modify: (data: Interface) => void): Promise<void> {
-    const data = await this.get(name);
-    modify(data);
-    return this.storage.set(name, JSON.stringify(data));
-  }
-}
+import {JSONStorage} from './storage/json';
 
 export class GenericStatsManager implements StatsManager {
-  readonly engagementStats: JSONRecordAccessor<EngagementStats>;
-  readonly componentStats: JSONRecordAccessor<ComponentStats>;
+  readonly storage: JSONStorage;
 
   constructor(storage: GenericStatsStorage) {
-    this.engagementStats = new JSONRecordAccessor<EngagementStats>(storage);
-    this.componentStats = new JSONRecordAccessor<ComponentStats>(storage);
+    this.storage = new JSONStorage(storage);
   }
 
   async logSessionStart(): Promise<void> {
-    return this.engagementStats.update('engagement', data => {
+    return this.storage.update('engagement', (data: EngagementStats) => {
       data.lastSessionStartTimestamp = data.sessionStartTimestamp;
       data.sessionStartTimestamp = this.getTimestamp();
       if (data.firstSessionStartTimestamp === undefined) {
@@ -37,37 +20,43 @@ export class GenericStatsManager implements StatsManager {
   }
 
   async logSessionEnd(): Promise<void> {
-    return this.engagementStats.update('engagement', data => {
+    return this.storage.update('engagement', (data: EngagementStats) => {
       data.lastSessionEndTimestamp = this.getTimestamp();
     });
   }
 
   async logComponentShow(category: string, componentId: string): Promise<void> {
-    return this.componentStats.update(`${category}.${componentId}`, data => {
-      data.showsCount = (data.showsCount || 0) + 1;
-      data.lastShowTimestamp = this.getTimestamp();
-    });
+    return this.storage.update(
+      `${category}.${componentId}`,
+      (data: ComponentStats) => {
+        data.showsCount = (data.showsCount || 0) + 1;
+        data.lastShowTimestamp = this.getTimestamp();
+      }
+    );
   }
 
   async logComponentClick(
     category: string,
     componentId: string
   ): Promise<void> {
-    return this.componentStats.update(`${category}.${componentId}`, data => {
-      data.clicksCount = (data.clicksCount || 0) + 1;
-      data.lastClickTimestamp = this.getTimestamp();
-    });
+    return this.storage.update(
+      `${category}.${componentId}`,
+      (data: ComponentStats) => {
+        data.clicksCount = (data.clicksCount || 0) + 1;
+        data.lastClickTimestamp = this.getTimestamp();
+      }
+    );
   }
 
   async getEngagementStats(): Promise<EngagementStats> {
-    return this.engagementStats.get('engagement');
+    return this.storage.get<EngagementStats>('engagement');
   }
 
   async getComponentStats(
     category: string,
     componentId: string
   ): Promise<ComponentStats> {
-    return this.componentStats.get(`${category}.${componentId}`);
+    return this.storage.get<ComponentStats>(`${category}.${componentId}`);
   }
 
   private getTimestamp(): number {
